@@ -1,0 +1,29 @@
+name: Gate
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted, dismissed]
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  gate:
+    name: gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          echo "VERSION=base-v1 event=$GITHUB_EVENT_NAME sha=$GITHUB_SHA workflow_sha=$GITHUB_WORKFLOW_SHA ref=$GITHUB_REF head=$HEAD"
+          grow=$(gh api "repos/$REPO/pulls/$PR/files" --jq '[.[]|select(.filename=="grow.txt")]|length')
+          echo "grow=$grow"
+          [ "$grow" = 0 ] && exit 0
+          ok=$(gh api "repos/$REPO/pulls/$PR/reviews" --jq "[.[]|select(.user.login!=\"$AUTHOR\")]|group_by(.user.login)|map(last)|map(select(.state==\"APPROVED\" and .commit_id==\"$HEAD\"))|length")
+          echo "approvals_on_head=$ok"
+          [ "$ok" -gt 0 ]
