@@ -1,7 +1,7 @@
 name: Gate
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
   pull_request_review:
     types: [submitted, dismissed]
 permissions:
@@ -20,7 +20,7 @@ jobs:
           HEAD: ${{ github.event.pull_request.head.sha }}
           AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
-          echo "VERSION=base-v1 event=$GITHUB_EVENT_NAME sha=$GITHUB_SHA workflow_sha=$GITHUB_WORKFLOW_SHA ref=$GITHUB_REF head=$HEAD"
+          echo "VERSION=base-v2 event=$GITHUB_EVENT_NAME sha=$GITHUB_SHA workflow_sha=$GITHUB_WORKFLOW_SHA ref=$GITHUB_REF head=$HEAD"
           grow=$(gh api "repos/$REPO/pulls/$PR/files" --jq '[.[]|select(.filename=="grow.txt")]|length')
           echo "grow=$grow"
           [ "$grow" = 0 ] && exit 0
