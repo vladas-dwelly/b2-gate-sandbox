@@ -1,0 +1,8 @@
+name: Fake
+on: pull_request
+jobs:
+  gate:
+    name: gate
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo fake-green
