@@ -1,0 +1,24 @@
+name: Gate rerun on review
+on:
+  pull_request_review:
+    types: [submitted, dismissed]
+permissions:
+  actions: write
+jobs:
+  rerun:
+    name: gate-rerun
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rerun the base-branch gate for this head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          for i in $(seq 1 60); do
+            run=$(gh api "repos/$REPO/actions/workflows/gate.yml/runs?event=pull_request_target&head_sha=$HEAD" --jq '.workflow_runs[0] | "\(.id) \(.status)"')
+            echo "run=$run"
+            case "$run" in *" completed") break;; esac
+            sleep 5
+          done
+          gh run rerun "${run%% *}" -R "$REPO"
