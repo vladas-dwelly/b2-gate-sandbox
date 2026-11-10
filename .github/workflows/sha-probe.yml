@@ -1,0 +1,14 @@
+name: sha-probe
+on:
+  pull_request:
+    types: [opened, edited]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - run: |
+          echo "PROBE action=${{ github.event.action }} base_ref=${{ github.event.pull_request.base.ref }} base_sha=${{ github.event.pull_request.base.sha }}"
+          echo "PROBE sha=${{ github.sha }} parents=$(git log -1 --format=%P HEAD)"
