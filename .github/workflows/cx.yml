@@ -1,0 +1,13 @@
+name: cx
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+concurrency:
+  group: cx-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  lintx:
+    name: lintx
+    runs-on: ubuntu-latest
+    steps:
+      - run: sleep 60
